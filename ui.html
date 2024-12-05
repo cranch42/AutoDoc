@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Enter API and Figma Keys</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+      }
+      input, button {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        font-size: 16px;
+      }
+      textarea {
+        width: 100%;
+        height: 50%;
+        padding: 10px;
+        font-size: 14px;
+        resize: none;
+      }
+      #buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Enter API and Figma Keys</h2>
+    <input type="text" id="figmaKey" placeholder="Enter your Figma File Key" />
+    <input type="text" id="apiKey" placeholder="Enter your OpenAI API Key" />
+    <button id="getFrames">Get Frames</button>
+    <textarea id="result" readonly placeholder="Results will appear here..."></textarea>
+    <div id="buttons">
+      <button id="copyResult">Copy Results</button>
+    </div>
+    <script>
+      // Слушаем клик на кнопку "Get Frames"
+      document.getElementById('getFrames').addEventListener('click', () => {
+        const figmaKey = document.getElementById('figmaKey').value;
+        const apiKey = document.getElementById('apiKey').value;
+
+        if (!figmaKey || !apiKey) {
+          alert('Both Figma File Key and OpenAI API Key are required!');
+          return;
+        }
+
+        // Отправляем сообщение в основной код
+        parent.postMessage({ pluginMessage: { type: 'getFrames', figmaKey, apiKey } }, '*');
+      });
+
+      // Слушаем клик на кнопку "Copy Results"
+      document.getElementById('copyResult').addEventListener('click', () => {
+        const resultText = document.getElementById('result');
+
+        // Выделяем весь текст в textarea
+        resultText.select();
+        resultText.setSelectionRange(0, 99999);
+
+        // Копируем текст в буфер обмена
+        try {
+          document.execCommand('copy');
+          alert('Results copied to clipboard!');
+        } catch (err) {
+          alert('Failed to copy results: ' + err);
+        }
+      });
+
+      // Обрабатываем сообщения из основного кода
+      window.onmessage = (event) => {
+        const message = event.data.pluginMessage;
+
+        if (message.type === 'error') {
+          alert(message.message);
+        } else if (message.type === 'result') {
+          document.getElementById('result').value = message.result;
+        }
+      };
+    </script>
+  </body>
+</html>
